@@ -1,0 +1,15 @@
+Source: downcount
+Section: utils
+Priority: optional
+Maintainer: Andy Balaam <axis3x3@users.sf.net>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.2
+
+Package: downcount
+Architecture: any
+Depends: python(>= 2.5)
+Description: downcount
+ downcount is a very simple timer that displays a countdown. It can display
+ with no window decoration for a cleaner look. It is implemented in Python
+ using PyGtk.
+

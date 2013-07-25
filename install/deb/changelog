@@ -1,0 +1,6 @@
+downcount (0.1-0ubuntu1) hardy; urgency=low
+
+  * First release packaged for ubuntu
+
+ -- Andy Balaam <axis3x3@users.sf.net>  Fri, 24 May 2013 09:48:00 +0100
+

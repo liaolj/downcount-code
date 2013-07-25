@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+# downcount Countdown timer
+# Copyright(C) 2013 by Andy Balaam
+# Free Software released under the GPLv2 license
+# See the file COPYING.txt for details
+
+import argparse
+import pygtk
+pygtk.require('2.0')
+import gtk
+import gobject
+import sys
+
+parser = argparse.ArgumentParser(
+    description='Simple countdown (or up) timer'
+)
+
+parser.add_argument(
+    '--direction',
+    choices=( "up", "down" ),
+    help="default: down"
+)
+
+parser.add_argument(
+    '--start-secs',
+    type=int,
+    default=None,
+    help="default: 300 (5 mins), or 0 if --direction is up",
+)
+
+
+class Downcount:
+
+    def on_click(self, widget, event ):
+        if event.type == gtk.gdk.BUTTON_PRESS:
+            if event.button == 1:
+                self.toggle_timeout()
+            else:
+                self.toggle_decoration()
+        if event.type == gtk.gdk._2BUTTON_PRESS:
+            self.clear_timer()
+
+    def toggle_decoration( self ):
+        self.window.set_decorated( not self.window.get_decorated() )
+
+    def toggle_timeout( self ):
+        if self.timeout is None:
+            self.timeout = gobject.timeout_add_seconds( 1, self.tick )
+        else:
+            gobject.source_remove( self.timeout )
+            self.timeout = None
+        self.update_label()
+
+    def clear_timer( self ):
+        self.time = self.initial_time
+        self.update_label()
+        self.toggle_timeout()
+        self.toggle_timeout()
+
+    def delete_event(self, widget, event, data=None):
+        return False
+
+    def destroy(self, widget, data=None):
+        gtk.main_quit()
+
+    def __init__( self, argv ):
+
+        args = parser.parse_args( argv[1:] )
+
+        if args.start_secs is None:
+            self.time = 0 if args.direction == "up" else 300
+        else:
+            self.time = args.start_secs
+
+        self.inc = 1 if args.direction == "up" else -1
+
+        self.initial_time = self.time
+
+        self.window = gtk.Window( gtk.WINDOW_TOPLEVEL )
+        self.window.connect("delete_event", self.delete_event)
+        self.window.connect("destroy", self.destroy)
+
+        # Creates a new button with the label "Hello World".
+        self.label = gtk.Label()
+        self.window.add_events( gtk.gdk.BUTTON_PRESS_MASK )
+        self.window.connect( "button-press-event", self.on_click )
+
+        self.window.set_border_width( 5 )
+        self.window.add( self.label )
+
+        self.timeout = None
+        self.toggle_timeout()
+        self.update_label()
+
+        self.label.show()
+        self.window.show()
+
+
+    def update_label( self ):
+        self.label.set_sensitive( self.timeout is not None )
+        t = abs( self.time )
+        mins = t / 60
+        secs = t % 60
+        if self.time < 0:
+            minus = "-"
+        else:
+            minus = ""
+        self.label.set_text( "%s%d:%02d" % ( minus, mins, secs ) )
+
+    def tick( self ):
+        self.time += self.inc
+        gobject.idle_add( self.update_label )
+        return True
+
+    def main( self ):
+        gtk.main()
+
+if __name__ == "__main__":
+    hello = Downcount( sys.argv )
+    hello.main()
+
